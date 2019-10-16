@@ -83,3 +83,18 @@ brews:
     description: ""
     test: |
       system "#{bin}/program --version"
+
+dockers:
+  - image_templates:
+      - "docker.io/itaysk/trivy:{{ .Version }}"
+    binaries:
+      - trivy
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.name={{ .ProjectName }}"
+      - "--label=org.label-schema.description=A Fast Vulnerability Scanner for Containers"
+      - "--label=org.label-schema.vendor=Aqua Security"
+      - "--label=org.label-schema.version={{ .Version }}"
+      - "--label=org.label-schema.build-date={{ .Date }}"
+      - "--label=org.label-schema.vcs=https://github.com/aquasecurity/harbor-scanner-trivy"
+      - "--label=org.label-schema.vcs-ref={{ .FullCommit }}"
