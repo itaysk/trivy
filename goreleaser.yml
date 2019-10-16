@@ -75,7 +75,7 @@ archives:
 brews:
   -
     github:
-      owner: aquasecurity
+      owner: itaysk
       name: homebrew-trivy
     dependencies:
       - rpm
@@ -96,5 +96,5 @@ dockers:
       - "--label=org.label-schema.vendor=Aqua Security"
       - "--label=org.label-schema.version={{ .Version }}"
       - "--label=org.label-schema.build-date={{ .Date }}"
-      - "--label=org.label-schema.vcs=https://github.com/aquasecurity/harbor-scanner-trivy"
+      - "--label=org.label-schema.vcs=https://github.com/aquasecurity/trivy"
       - "--label=org.label-schema.vcs-ref={{ .FullCommit }}"
