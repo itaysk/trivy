@@ -267,6 +267,11 @@ func NewImageCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 			if err != nil {
 				return xerrors.Errorf("flag error: %w", err)
 			}
+			dbts, err := getDBTimestamp(options.CacheDir)
+			if err != nil {
+				return err
+			}
+			options.DBTimestamp = dbts
 			return artifact.Run(cmd.Context(), options, artifact.TargetContainerImage)
 		},
 		SilenceErrors: true,
@@ -320,6 +325,11 @@ func NewFilesystemCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 			if err != nil {
 				return xerrors.Errorf("flag error: %w", err)
 			}
+			dbts, err := getDBTimestamp(options.CacheDir)
+			if err != nil {
+				return err
+			}
+			options.DBTimestamp = dbts
 			return artifact.Run(cmd.Context(), options, artifact.TargetFilesystem)
 		},
 		SilenceErrors: true,
@@ -947,11 +957,16 @@ func NewVersionCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 	return cmd
 }
 
-func showVersion(cacheDir, outputFormat, version string, outputWriter io.Writer) {
+func getDBTimestamp(cacheDir string) (string, error) {
+	dbMeta, err := getDBMeta(cacheDir)
+	return dbMeta.UpdatedAt.String(), err
+}
+
+func getDBMeta(cacheDir string) (*metadata.Metadata, error) {
 	var dbMeta *metadata.Metadata
 
 	mc := metadata.NewClient(cacheDir)
-	meta, _ := mc.Get() // nolint: errcheck
+	meta, err := mc.Get()
 	if !meta.UpdatedAt.IsZero() && !meta.NextUpdate.IsZero() && meta.Version != 0 {
 		dbMeta = &metadata.Metadata{
 			Version:      meta.Version,
@@ -960,7 +975,11 @@ func showVersion(cacheDir, outputFormat, version string, outputWriter io.Writer)
 			DownloadedAt: meta.DownloadedAt.UTC(),
 		}
 	}
+	return dbMeta, err
+}
 
+func showVersion(cacheDir, outputFormat, version string, outputWriter io.Writer) {
+	dbMeta, _ := getDBMeta(cacheDir) // nolint: errcheck
 	switch outputFormat {
 	case "json":
 		b, _ := json.Marshal(VersionInfo{

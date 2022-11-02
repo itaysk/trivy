@@ -87,6 +87,8 @@ type Options struct {
 	// Trivy's version, not populated via CLI flags
 	AppVersion string
 
+	DBTimestamp string
+
 	// We don't want to allow disabled analyzers to be passed by users, but it is necessary for internal use.
 	DisabledAnalyzers []analyzer.Type
 }

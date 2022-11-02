@@ -257,6 +257,7 @@ func (r *runner) Report(opts flag.Options, report types.Report) error {
 		OutputTemplate:     opts.Template,
 		IncludeNonFailures: opts.IncludeNonFailures,
 		Trace:              opts.Trace,
+		DBTimestamp:        opts.DBTimestamp,
 	}); err != nil {
 		return xerrors.Errorf("unable to write results: %w", err)
 	}

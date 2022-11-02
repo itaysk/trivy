@@ -50,12 +50,14 @@ type Metadata struct {
 type VulnWriter struct {
 	output  io.Writer
 	version string
+	dbts    string
 }
 
-func NewVulnWriter(output io.Writer, version string) VulnWriter {
+func NewVulnWriter(output io.Writer, version string, dbts string) VulnWriter {
 	return VulnWriter{
 		output:  output,
 		version: version,
+		dbts:    dbts,
 	}
 }
 
@@ -69,6 +71,8 @@ func (w VulnWriter) Write(report types.Report) error {
 		Version: w.version,
 		Result:  report,
 	}
+
+	predicate.Scanner.DB.Version = w.dbts
 
 	now := clock.Now()
 	predicate.Metadata = Metadata{

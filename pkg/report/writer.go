@@ -52,6 +52,8 @@ type Option struct {
 	// For licenses
 	LicenseRiskThreshold int
 	IgnoredLicenses      []string
+
+	DBTimestamp string
 }
 
 // Write writes the result to output, format as passed in argument
@@ -92,7 +94,7 @@ func Write(report types.Report, option Option) error {
 	case FormatSarif:
 		writer = SarifWriter{Output: option.Output, Version: option.AppVersion}
 	case FormatCosignVuln:
-		writer = predicate.NewVulnWriter(option.Output, option.AppVersion)
+		writer = predicate.NewVulnWriter(option.Output, option.AppVersion, option.DBTimestamp)
 	default:
 		return xerrors.Errorf("unknown format: %v", option.Format)
 	}
