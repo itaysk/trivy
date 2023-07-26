@@ -1,1 +1,1 @@
-See [Issues](https://aquasecurity.github.io/trivy/latest/community/contribute/issue/) and [Pull Requests](https://aquasecurity.github.io/trivy/latest/community/contribute/pr/)
+Contribution guide is available in the Trivy Documentation: <https://aquasecurity.github.io/trivy/latest/community/contribute>

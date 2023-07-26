@@ -144,9 +144,10 @@ nav:
     - Security Management: ecosystem/security.md
   - Contributing:
       - How to contribute:
-          - Issues: community/contribute/issue.md
-          - Discussions: community/contribute/discussion.md
+          - Development Guide: community/contribute/development.md
+          - Discussions and Issues: community/contribute/discussion.md
           - Pull Requests: community/contribute/pr.md
+          - CLA: community/contribute/CLA.md
       - Maintainer:
           - Help Wanted: community/maintainer/help-wanted.md
           - Triage: community/maintainer/triage.md
