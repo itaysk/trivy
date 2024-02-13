@@ -173,6 +173,8 @@ func NewRootCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 			// Set the Trivy version here so that we can override version printer.
 			cmd.Version = version.AppVersion()
 
+			flag.Target = cmd.Name()
+
 			// viper.BindPFlag cannot be called in init().
 			// cf. https://github.com/spf13/cobra/issues/875
 			//     https://github.com/spf13/viper/issues/233

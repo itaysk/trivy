@@ -65,6 +65,19 @@ var (
 		Usage:      "write the default config to trivy-default.yaml",
 		Persistent: true,
 	}
+	TelemetryFlag = Flag[bool]{
+		Name:       "telemetry",
+		ConfigName: "telemetry",
+		Usage:      "enable telemetry",
+		Persistent: true,
+	}
+	TelemetryURLFlag = Flag[string]{
+		Name:       "telemetry-url",
+		ConfigName: "telemetry-url",
+		Default:    "https://telemetry.trivy.dev/post",
+		Usage:      "telemetry URL",
+		Persistent: true,
+	}
 )
 
 // GlobalFlagGroup composes global flags
@@ -77,6 +90,8 @@ type GlobalFlagGroup struct {
 	Timeout               *Flag[time.Duration]
 	CacheDir              *Flag[string]
 	GenerateDefaultConfig *Flag[bool]
+	Telemetry             *Flag[bool]
+	TelemetryURL          *Flag[string]
 }
 
 // GlobalOptions defines flags and other configuration parameters for all the subcommands
@@ -89,6 +104,8 @@ type GlobalOptions struct {
 	Timeout               time.Duration
 	CacheDir              string
 	GenerateDefaultConfig bool
+	Telemetry             bool
+	TelemetryURL          string
 }
 
 func NewGlobalFlagGroup() *GlobalFlagGroup {
@@ -101,6 +118,8 @@ func NewGlobalFlagGroup() *GlobalFlagGroup {
 		Timeout:               TimeoutFlag.Clone(),
 		CacheDir:              CacheDirFlag.Clone(),
 		GenerateDefaultConfig: GenerateDefaultConfigFlag.Clone(),
+		Telemetry:             TelemetryFlag.Clone(),
+		TelemetryURL:          TelemetryURLFlag.Clone(),
 	}
 }
 
@@ -118,6 +137,8 @@ func (f *GlobalFlagGroup) Flags() []Flagger {
 		f.Timeout,
 		f.CacheDir,
 		f.GenerateDefaultConfig,
+		f.Telemetry,
+		f.TelemetryURL,
 	}
 }
 
@@ -153,5 +174,7 @@ func (f *GlobalFlagGroup) ToOptions() (GlobalOptions, error) {
 		Timeout:               f.Timeout.Value(),
 		CacheDir:              f.CacheDir.Value(),
 		GenerateDefaultConfig: f.GenerateDefaultConfig.Value(),
+		Telemetry:             f.Telemetry.Value(),
+		TelemetryURL:          f.TelemetryURL.Value(),
 	}, nil
 }

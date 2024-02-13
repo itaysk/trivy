@@ -22,9 +22,13 @@ import (
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/plugin"
 	"github.com/aquasecurity/trivy/pkg/result"
+	"github.com/aquasecurity/trivy/pkg/telemetry"
 	"github.com/aquasecurity/trivy/pkg/types"
 	"github.com/aquasecurity/trivy/pkg/version"
 )
+
+// Target represents the selected scan target (e.g. image, filesystem, etc.)
+var Target string
 
 type FlagType interface {
 	int | string | []string | bool | time.Duration | float64
@@ -103,7 +107,7 @@ func (f *Flag[T]) Parse() error {
 		value = f.ValueNormalize(value)
 	}
 
-	if f.isSet() && !f.allowedValue(value) {
+	if f.IsSet() && !f.allowedValue(value) {
 		return xerrors.Errorf(`invalid argument "%s" for "--%s" flag: must be one of %q`, value, f.Name, f.Values)
 	}
 
@@ -154,7 +158,10 @@ func (f *Flag[T]) cast(val any) any {
 	return val
 }
 
-func (f *Flag[T]) isSet() bool {
+func (f *Flag[T]) IsSet() bool {
+	if f == nil {
+		return false
+	}
 	configNames := lo.FilterMap(f.Aliases, func(alias Alias, _ int) (string, bool) {
 		return alias.ConfigName, alias.ConfigName != ""
 	})
@@ -184,14 +191,26 @@ func (f *Flag[T]) GetName() string {
 	return f.Name
 }
 
+func (f *Flag[T]) GetConfigName() string {
+	return f.ConfigName
+}
+
 func (f *Flag[T]) GetAliases() []Alias {
 	return f.Aliases
+}
+
+func (f *Flag[T]) GetValues() []string {
+	return f.Values
 }
 
 func (f *Flag[T]) Value() (t T) {
 	if f == nil {
 		return t
 	}
+	return f.value
+}
+
+func (f *Flag[T]) GetValue() any {
 	return f.value
 }
 
@@ -290,7 +309,11 @@ type FlagGroup interface {
 
 type Flagger interface {
 	GetName() string
+	GetConfigName() string
 	GetAliases() []Alias
+	IsSet() bool
+	GetValues() []string
+	GetValue() any
 
 	Parse() error
 	Add(cmd *cobra.Command)
@@ -444,8 +467,8 @@ func (o *Options) outputPluginWriter(ctx context.Context) (io.Writer, func() err
 	return pw, cleanup, nil
 }
 
-// groups returns all the flag groups other than global flags
-func (f *Flags) groups() []FlagGroup {
+// Groups returns all the flag Groups other than global flags
+func (f *Flags) Groups() []FlagGroup {
 	var groups []FlagGroup
 	// This order affects the usage message, so they are sorted by frequency of use.
 	if f.ScanFlagGroup != nil {
@@ -507,7 +530,7 @@ func (f *Flags) groups() []FlagGroup {
 
 func (f *Flags) AddFlags(cmd *cobra.Command) {
 	aliases := make(flagAliases)
-	for _, group := range f.groups() {
+	for _, group := range f.Groups() {
 		for _, flag := range group.Flags() {
 			if lo.IsNil(flag) || flag.GetName() == "" {
 				continue
@@ -525,7 +548,7 @@ func (f *Flags) AddFlags(cmd *cobra.Command) {
 
 func (f *Flags) Usages(cmd *cobra.Command) string {
 	var usages string
-	for _, group := range f.groups() {
+	for _, group := range f.Groups() {
 		flags := pflag.NewFlagSet(cmd.Name(), pflag.ContinueOnError)
 		lflags := cmd.LocalFlags()
 		for _, flag := range group.Flags() {
@@ -545,7 +568,7 @@ func (f *Flags) Usages(cmd *cobra.Command) string {
 }
 
 func (f *Flags) Bind(cmd *cobra.Command) error {
-	for _, group := range f.groups() {
+	for _, group := range f.Groups() {
 		if group == nil {
 			continue
 		}
@@ -699,6 +722,11 @@ func (f *Flags) ToOptions(args []string) (Options, error) {
 	}
 
 	opts.Align()
+
+	if opts.Telemetry {
+		p := makeTelemetryPayload(*f, opts, Target)
+		go telemetry.SendTelemetry(p, opts.TelemetryURL)
+	}
 
 	return opts, nil
 }
