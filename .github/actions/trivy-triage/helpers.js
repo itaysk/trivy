@@ -5,7 +5,7 @@ module.exports = {
         const category = discussion.category.name;
         const body = discussion.body;
         if (category !== "Ideas") {
-            console.log("skipping discussion with category ${category} and body ${body}");
+            console.log(`skipping discussion with category ${category} and body ${body}`);
         }
         const scannerPattern = /### Scanner\n\n(.+)/;
         const scannerFound = body.match(scannerPattern);
