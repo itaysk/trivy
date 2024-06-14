@@ -73,5 +73,16 @@ describe('trivy-triage', async function() {
       assert(!labels.includes('FilesystemLabel'));
       assert(!labels.includes('MisconfigurationLabel'));
     });
+    it('process only relevant categories', async function() {
+      const discussion = {
+        body: 'hello hello\nbla bla.\n### Scanner\n\nVulnerability\n### Target\n\nContainer Image\nbye bye.', 
+        category: {
+          name: 'Announcements'
+        }
+      };
+      const labels = detectDiscussionLabels(discussion, configDiscussionLabels);
+      assert(!labels.includes('FilesystemLabel'));
+      assert(!labels.includes('MisconfigurationLabel'));
+    });
   });
 });
