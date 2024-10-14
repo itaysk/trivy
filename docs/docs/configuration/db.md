@@ -56,7 +56,7 @@ Trivy could also download the vulnerability database from an alternative OCI reg
 $ trivy image --db-repository registry.gitlab.com/gitlab-org/security-products/dependencies/trivy-db
 ```
 
-The `--db-repository` flag accepts multiple values, which can be used to specify multiple alternative repository locations. In case of failure, Trivy will fall back to alternative registries in the order specified.
+The `--db-repository` flag accepts multiple values, which can be used to specify multiple alternative repository locations. In case of failure, Trivy will fall back to alternative registries in the order specified. An attempt to download from the next repository is only made if a temporary error is received (e.g. status 429 or 5xx).
 
 ```
 $ trivy image --db-repository ,my.registry.local/trivy-db,registry.gitlab.com/gitlab-org/security-products/dependencies/trivy-d
